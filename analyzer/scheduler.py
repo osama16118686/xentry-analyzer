@@ -1,3 +1,4 @@
+last_analysis_results = {}
 
 import asyncio
 from datetime import datetime
