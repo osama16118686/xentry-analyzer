@@ -4,16 +4,16 @@ import httpx
 BYBIT_API_KEY = os.getenv("BYBIT_API_KEY")
 BYBIT_API_SECRET = os.getenv("BYBIT_API_SECRET")
 
-BASE_URL = "https://api-testnet.bybit.com"  # testnet URL
+BASE_URL = "https://api-testnet.bybit.com"
 
 headers = {
     "Content-Type": "application/json",
     "X-BYBIT-API-KEY": BYBIT_API_KEY
 }
 
-def place_order(symbol, side, qty, entry_price):
+def place_order(symbol, side, qty, entry_price=None, stop_loss=None, take_profit=None):
     """
-    إرسال أمر شراء أو بيع إلى Bybit Testnet
+    تنفيذ أمر على Bybit Testnet مع إمكانية تحديد وقف الخسارة وهدف الربح
     """
     order = {
         "category": "spot",
@@ -22,6 +22,12 @@ def place_order(symbol, side, qty, entry_price):
         "orderType": "MARKET",
         "qty": str(qty)
     }
+
+    # نضيف وقف الخسارة والهدف إذا تم تحديدهم
+    if stop_loss:
+        order["stopLoss"] = str(stop_loss)
+    if take_profit:
+        order["takeProfit"] = str(take_profit)
 
     try:
         response = httpx.post(f"{BASE_URL}/v5/order/create", headers=headers, json=order)
