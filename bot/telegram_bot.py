@@ -4,7 +4,7 @@ import asyncio
 from analyzer.logic import analyze_coin, analyze_all_coins
 from utils.logger import log
 from analyzer import scheduler
-from utils.bybit_client import place_order  # ← تنفيذ الصفقة
+from utils.binance_client import place_order  # ← تم التبديل إلى Binance
 from trade.trade_manager import open_positions
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -80,12 +80,11 @@ def test_trade(message):
     try:
         response = place_order(
             symbol="BTCUSDT",
-            side="Buy",
-            qty=0.0001,
-            entry_price=100.0
+            side="BUY",
+            quantity=10.0  # مبلغ افتراضي بالدولار
         )
-        if response and "retCode" in response and response["retCode"] == 0:
-            bot.reply_to(message, "✅ تم تنفيذ صفقة وهمية بنجاح (تم الربط مع Bybit).")
+        if response and response.get("status") == "FILLED":
+            bot.reply_to(message, "✅ تم تنفيذ صفقة تجريبية بنجاح (Binance API).")
         else:
             bot.reply_to(message, f"⚠️ لم تنجح الصفقة. الرد:\n{response}")
     except Exception as e:
