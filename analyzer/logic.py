@@ -43,4 +43,6 @@ async def analyze_all_coins():
         result = await analyze_coin(coin)
         if result:
             results[coin] = result
+                    await asyncio.sleep(1.5)  # تأخير لتجنب الحظر من CoinGecko
+
     return results
