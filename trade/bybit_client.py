@@ -16,7 +16,7 @@ def get_balance():
 def place_order(symbol, side, qty, entry_price):
     try:
         response = session.place_order(
-            category="spot",
+            category="spot",  # يمكن تغييره إلى 'linear' إذا كنت تستخدم عقود
             symbol=symbol.upper(),
             side=side,
             orderType="Limit",
@@ -27,4 +27,4 @@ def place_order(symbol, side, qty, entry_price):
         return response
     except Exception as e:
         print(f"❌ خطأ في تنفيذ الأمر: {e}")
-        return None
+        return {"error": str(e)}
