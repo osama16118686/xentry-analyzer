@@ -1,3 +1,10 @@
+last_analysis_results = {}
+
+import asyncio
+from datetime import datetime
+from analyzer.logic import analyze_all_coins
+from utils.logger import log
+
 async def start_scheduler():
     global last_analysis_results
     while True:
