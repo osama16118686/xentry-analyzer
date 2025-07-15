@@ -1,26 +1,2 @@
 pyTelegramBotAPI==4.12.0
 httpx==0.27.0
-@bot.message_handler(commands=['report'])
-def report(message):
-    from analyzer import scheduler
-    if not scheduler.last_analysis_results:
-        bot.reply_to(message, "ℹ️ لا توجد نتائج تحليل محفوظة حتى الآن.")
-        return
-
-    msg = "📈 نتائج التحليل الأخير:\n\n"
-    rare = []
-    medium = []
-
-    for coin, count in scheduler.last_analysis_results.items():
-        if count == 3:
-            rare.append(f"- {coin} ✅✅✅")
-        elif count == 2:
-            medium.append(f"- {coin} ✅✅")
-
-    if rare:
-        msg += "🔥 فرص نادرة (3 شروط):\n" + "\n".join(rare) + "\n\n"
-    if medium:
-        msg += "✅ فرص متوسطة (2 شروط):\n" + "\n".join(medium) + "\n\n"
-
-    msg += "⚠️ باقي العملات لم تتحقق فيها الشروط."
-    bot.reply_to(message, msg)
