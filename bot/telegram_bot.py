@@ -1,9 +1,9 @@
-
 import os
 import telebot
 import asyncio
 from analyzer.logic import analyze_coin
 from utils.logger import log
+from analyzer import scheduler  # ← نقلنا هذا فوق عشان نستخدمه في /report
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -12,10 +12,41 @@ bot = telebot.TeleBot(BOT_TOKEN)
 def start(message):
     bot.reply_to(message, "👋 أهلاً بك في Xentry Crypto Bot.\n\nاكتب اسم العملة (مثلاً bitcoin أو solana) لتحليلها.")
 
+@bot.message_handler(commands=['report'])
+def report(message):
+    if not scheduler.last_analysis_results:
+        bot.reply_to(message, "ℹ️ لا توجد نتائج تحليل محفوظة حتى الآن.")
+        return
+
+    msg = "📈 نتائج التحليل الأخير:\n\n"
+    rare = []
+    medium = []
+
+    for coin, count in scheduler.last_analysis_results.items():
+        if count == 3:
+            rare.append(f"- {coin} ✅✅✅")
+        elif count == 2:
+            medium.append(f"- {coin} ✅✅")
+
+    if rare:
+        msg += "🔥 فرص نادرة (3 شروط):\n" + "\n".join(rare) + "\n\n"
+    if medium:
+        msg += "✅ فرص متوسطة (2 شروط):\n" + "\n".join(medium) + "\n\n"
+
+    msg += "⚠️ باقي العملات لم تتحقق فيها الشروط."
+    bot.reply_to(message, msg)
+
 @bot.message_handler(func=lambda msg: True)
 def handle_coin(message):
     coin = message.text.strip().lower()
-    result = asyncio.run(analyze_coin(coin))
+    try:
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(analyze_coin(coin))
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(analyze_coin(coin))
+
     if not result:
         bot.reply_to(message, "🚫 لم أتمكن من جلب بيانات العملة.")
         return
@@ -39,27 +70,3 @@ def handle_coin(message):
 def start_bot():
     log("🤖 بدء تشغيل بوت التليجرام...")
     bot.polling()
-@bot.message_handler(commands=['report'])
-def report(message):
-    from analyzer import scheduler
-    if not scheduler.last_analysis_results:
-        bot.reply_to(message, "ℹ️ لا توجد نتائج تحليل محفوظة حتى الآن.")
-        return
-
-    msg = "📈 نتائج التحليل الأخير:\n\n"
-    rare = []
-    medium = []
-
-    for coin, count in scheduler.last_analysis_results.items():
-        if count == 3:
-            rare.append(f"- {coin} ✅✅✅")
-        elif count == 2:
-            medium.append(f"- {coin} ✅✅")
-
-    if rare:
-        msg += "🔥 فرص نادرة (3 شروط):\n" + "\n".join(rare) + "\n\n"
-    if medium:
-        msg += "✅ فرص متوسطة (2 شروط):\n" + "\n".join(medium) + "\n\n"
-
-    msg += "⚠️ باقي العملات لم تتحقق فيها الشروط."
-    bot.reply_to(message, msg)
