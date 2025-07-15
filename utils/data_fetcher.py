@@ -7,9 +7,12 @@ async def fetch_price_data(coin_id):
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.get(url)
+
             if response.status_code != 200:
                 print(f"⚠️ فشل جلب {coin_id} - Status {response.status_code}")
                 return None
+
+            print(f"✅ تم جلب {coin_id} - Status {response.status_code}")  # ← السطر المضاف
 
             data = response.json()
             market = data.get("market_data", {})
