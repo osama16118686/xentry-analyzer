@@ -4,6 +4,8 @@ import asyncio
 from analyzer.logic import analyze_coin, analyze_all_coins
 from utils.logger import log
 from analyzer import scheduler
+from utils.bybit_client import place_order  # ← استدعاء تنفيذ الطلب
+from trade.trade_manager import open_positions  # ← نستخدمه للفحص البسيط
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -72,6 +74,25 @@ def status(message):
     total = len(scheduler.last_analysis_results)
     time = scheduler.last_analysis_time or "غير متوفر"
     bot.reply_to(message, f"📊 تم تحليل {total} عملة.\n🕒 آخر تحليل: {time}")
+
+@bot.message_handler(commands=['test_trade'])
+def test_trade(message):
+    try:
+        # تجربة تنفيذ صفقة شراء وهمية بـ 10 دولار على BTCUSDT
+        response = place_order(
+            symbol="BTCUSDT",
+            side="Buy",
+            qty=0.0001,
+            entry_price=100.0,
+            stop_loss=95.0,
+            take_profit=110.0
+        )
+        if response and "retCode" in response and response["retCode"] == 0:
+            bot.reply_to(message, "✅ تم تنفيذ صفقة وهمية بنجاح (تم الربط مع Bybit).")
+        else:
+            bot.reply_to(message, f"⚠️ لم تنجح الصفقة. الرد:\n{response}")
+    except Exception as e:
+        bot.reply_to(message, f"❌ خطأ أثناء محاولة تنفيذ الصفقة:\n{str(e)}")
 
 @bot.message_handler(func=lambda msg: True)
 def handle_coin(message):
