@@ -1,4 +1,4 @@
-import asyncio  # ← تمت إضافته هنا
+
 from utils.logger import log
 from utils.data_fetcher import fetch_price_data
 
@@ -10,12 +10,21 @@ def check_conditions(data):
         "strong_support_zone" if data["support_zone"] else None
     ]
 
+def calculate_targets(entry, price, stop_limit_percent=2.5):
+    stop_loss = round(entry * (1 - stop_limit_percent / 100), 4)
+    diff = entry - stop_loss
+    take_profit = round(entry + diff * 2.5, 4)  # ممكن البيع 5-10%
+    return stop_loss, take_profit
+
 async def analyze_coin(coin):
     data = await fetch_price_data(coin)
     if not data:
         return None
 
     matched = list(filter(None, check_conditions(data)))
+    entry = data["price"]
+    stop_loss, take_profit = calculate_targets(entry, data["price"])
+
     return {
         "coin": coin,
         "matched_conditions": matched,
@@ -26,9 +35,13 @@ async def analyze_coin(coin):
         "sma7": data["sma7"],
         "rsi": data["rsi"],
         "low_30d": data["low_30d"],
+        "entry": entry,
+        "stop_loss": stop_loss,
+        "take_profit": take_profit
     }
 
 async def analyze_all_coins():
+    import asyncio
     top_50 = [
         "bitcoin", "ethereum", "tether", "bnb", "solana", "ripple", "dogecoin", "cardano",
         "avalanche", "shiba-inu", "polkadot", "chainlink", "tron", "polygon", "litecoin",
