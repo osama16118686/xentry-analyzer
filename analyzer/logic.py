@@ -1,4 +1,3 @@
-
 from utils.logger import log
 from utils.data_fetcher import fetch_price_data
 
@@ -43,6 +42,6 @@ async def analyze_all_coins():
         result = await analyze_coin(coin)
         if result:
             results[coin] = result
-                    await asyncio.sleep(1.5)  # تأخير لتجنب الحظر من CoinGecko
+        await asyncio.sleep(1.5)  # تأخير لتجنب الحظر من CoinGecko
 
     return results
