@@ -7,9 +7,13 @@ session = HTTP(
 )
 
 def get_balance():
-    return session.get_wallet_balance(accountType="UNIFIED")
+    try:
+        return session.get_wallet_balance(accountType="UNIFIED")
+    except Exception as e:
+        print(f"❌ خطأ أثناء جلب الرصيد: {e}")
+        return None
 
-def place_order(symbol, side, qty, entry_price, stop_loss, take_profit):
+def place_order(symbol, side, qty, entry_price):
     try:
         response = session.place_order(
             category="spot",
@@ -18,9 +22,7 @@ def place_order(symbol, side, qty, entry_price, stop_loss, take_profit):
             orderType="Limit",
             qty=qty,
             price=entry_price,
-            timeInForce="GTC",
-            stopLoss=stop_loss,
-            takeProfit=take_profit
+            timeInForce="GTC"
         )
         return response
     except Exception as e:
