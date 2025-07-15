@@ -54,14 +54,12 @@ async def check_open_trades(bot=None, chat_id=None):
         price = data["price"]
 
         if price <= trade["stop_loss"]:
-            result = f"❌ صفقة خاسرة لـ {coin.upper()}.\nخسارة: {round(trade['entry'] - price, 4)}"
-            closed.append((coin, result))
+            result = f"❌ تم تفعيل وقف الخسارة لـ {coin.upper()} بسعر السوق.\nالسعر الحالي: {price}\nالخسارة: {round(trade['entry'] - price, 4)}"
             del open_positions[coin]
+            if bot and chat_id:
+                await bot.send_message(chat_id, result)
         elif price >= trade["take_profit"]:
-            result = f"✅ صفقة رابحة لـ {coin.upper()}!\nربح: {round(price - trade['entry'], 4)}"
-            closed.append((coin, result))
+            result = f"✅ تم تحقيق جني الأرباح لـ {coin.upper()}!\nالسعر الحالي: {price}\nالربح: {round(price - trade['entry'], 4)}"
             del open_positions[coin]
-
-    if bot and chat_id:
-        for _, msg in closed:
-            await bot.send_message(chat_id, msg)
+            if bot and chat_id:
+                await bot.send_message(chat_id, result)
