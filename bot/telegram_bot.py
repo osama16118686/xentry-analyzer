@@ -1,9 +1,9 @@
 import os
 import telebot
 import asyncio
-from analyzer.logic import analyze_coin, analyze_all_coins  # ← إضافة analyze_all_coins
+from analyzer.logic import analyze_coin, analyze_all_coins
 from utils.logger import log
-from analyzer import scheduler  # ← نقلنا هذا فوق عشان نستخدمه في /report
+from analyzer import scheduler
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -40,7 +40,7 @@ def report(message):
 
     bot.reply_to(message, msg)
 
-@bot.message_handler(commands=['analyze_now'])  # ← الأمر الجديد
+@bot.message_handler(commands=['analyze_now'])
 def analyze_now(message):
     async def run_analysis():
         results = await analyze_all_coins()
@@ -62,6 +62,16 @@ def analyze_now(message):
         count = loop.run_until_complete(run_analysis())
 
     bot.reply_to(message, f"✅ تم التحليل اليدوي بنجاح.\n📊 عدد الفرص المكتشفة: {count}")
+
+@bot.message_handler(commands=['status'])
+def status(message):
+    if not scheduler.last_analysis_results:
+        bot.reply_to(message, "ℹ️ لا توجد نتائج تحليل حتى الآن.")
+        return
+
+    total = len(scheduler.last_analysis_results)
+    time = scheduler.last_analysis_time or "غير متوفر"
+    bot.reply_to(message, f"📊 تم تحليل {total} عملة.\n🕒 آخر تحليل: {time}")
 
 @bot.message_handler(func=lambda msg: True)
 def handle_coin(message):
