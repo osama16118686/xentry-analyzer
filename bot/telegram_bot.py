@@ -1,7 +1,7 @@
 import os
 import telebot
 import asyncio
-from analyzer.logic import analyze_coin
+from analyzer.logic import analyze_coin, analyze_all_coins  # ← إضافة analyze_all_coins
 from utils.logger import log
 from analyzer import scheduler  # ← نقلنا هذا فوق عشان نستخدمه في /report
 
@@ -39,6 +39,29 @@ def report(message):
         msg += f"\n🕒 آخر تحليل تم في: {scheduler.last_analysis_time}"
 
     bot.reply_to(message, msg)
+
+@bot.message_handler(commands=['analyze_now'])  # ← الأمر الجديد
+def analyze_now(message):
+    async def run_analysis():
+        results = await analyze_all_coins()
+        scheduler.last_analysis_results = {
+            coin: len(data["matched_conditions"])
+            for coin, data in results.items()
+        }
+        from datetime import datetime
+        scheduler.last_analysis_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        count = len([c for c, matched in scheduler.last_analysis_results.items() if matched >= 2])
+        return count
+
+    try:
+        loop = asyncio.get_event_loop()
+        count = loop.run_until_complete(run_analysis())
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        count = loop.run_until_complete(run_analysis())
+
+    bot.reply_to(message, f"✅ تم التحليل اليدوي بنجاح.\n📊 عدد الفرص المكتشفة: {count}")
 
 @bot.message_handler(func=lambda msg: True)
 def handle_coin(message):
