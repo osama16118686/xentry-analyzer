@@ -1,4 +1,3 @@
-
 from utils.binance_client import place_order
 from utils.data_fetcher import fetch_price_data
 
@@ -41,16 +40,13 @@ async def open_trade(coin, analysis_result, bot=None, chat_id=None):
 
     # إرسال تنبيه عبر التلغرام
     if bot and chat_id:
-        await bot.send_message(
-            chat_id,
-            f"🟢 تم فتح صفقة لـ {coin.upper()}.
-"
-            f"سعر الدخول: {trade['entry']}
-"
-            f"وقف الخسارة: {trade['stop_loss']}
-"
+        msg = (
+            f"🟢 تم فتح صفقة لـ {coin.upper()}.\n"
+            f"سعر الدخول: {trade['entry']}\n"
+            f"وقف الخسارة: {trade['stop_loss']}\n"
             f"جني الربح: {trade['take_profit']}"
         )
+        await bot.send_message(chat_id, msg)
 
     return trade
 
@@ -64,16 +60,21 @@ async def check_open_trades(bot=None, chat_id=None):
         price = data["price"]
 
         if price <= trade["stop_loss"]:
-            result = f"❌ تم تفعيل وقف الخسارة لـ {coin.upper()} بسعر السوق.
-السعر الحالي: {price}
-الخسارة: {round(trade['entry'] - price, 4)}"
+            result = (
+                f"❌ تم تفعيل وقف الخسارة لـ {coin.upper()} بسعر السوق.\n"
+                f"السعر الحالي: {price}\n"
+                f"الخسارة: {round(trade['entry'] - price, 4)}"
+            )
             del open_positions[coin]
             if bot and chat_id:
                 await bot.send_message(chat_id, result)
+
         elif price >= trade["take_profit"]:
-            result = f"✅ تم تحقيق جني الأرباح لـ {coin.upper()}!
-السعر الحالي: {price}
-الربح: {round(price - trade['entry'], 4)}"
+            result = (
+                f"✅ تم تحقيق جني الأرباح لـ {coin.upper()}!\n"
+                f"السعر الحالي: {price}\n"
+                f"الربح: {round(price - trade['entry'], 4)}"
+            )
             del open_positions[coin]
             if bot and chat_id:
                 await bot.send_message(chat_id, result)
