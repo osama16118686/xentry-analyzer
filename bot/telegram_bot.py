@@ -8,7 +8,7 @@ from utils.binance_client import place_order  # ← تم التبديل إلى B
 from trade.trade_manager import open_positions
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-bot = telebot.TeleBot(BOT_TOKEN)
+from .bot_instance import bot
 
 @bot.message_handler(commands=['start'])
 def start(message):
