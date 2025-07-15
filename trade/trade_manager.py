@@ -1,3 +1,6 @@
+from utils.bybit_client import place_order
+from utils.data_fetcher import fetch_price_data
+
 open_positions = {}
 
 def calculate_trade_levels(price, is_strong):
@@ -13,7 +16,7 @@ def calculate_trade_levels(price, is_strong):
         "amount": amount
     }
 
-async def open_trade(coin, analysis_result):
+async def open_trade(coin, analysis_result, bot=None, chat_id=None):
     if coin in open_positions:
         return None  # already open
 
@@ -26,21 +29,36 @@ async def open_trade(coin, analysis_result):
     price = analysis_result["current_price"]
     trade = calculate_trade_levels(price, is_strong)
     open_positions[coin] = trade
+
+    # تنفيذ الصفقة فعليًا
+    place_order(
+        symbol=coin,
+        side="Buy",
+        qty=trade["amount"],
+        entry_price=trade["entry"]
+    )
+
+    # إرسال تنبيه عبر التلغرام
+    if bot and chat_id:
+        await bot.send_message(chat_id, f"🟢 تم فتح صفقة لـ {coin.upper()}.\nسعر الدخول: {trade['entry']}\nوقف الخسارة: {trade['stop_loss']}\nجني الربح: {trade['take_profit']}")
+
     return trade
 
 async def check_open_trades(bot=None, chat_id=None):
     closed = []
     for coin, trade in list(open_positions.items()):
-        price = trade["entry"] * 1.08  # simulate current price
+        data = await fetch_price_data(coin)
+        if not data:
+            continue
+
+        price = data["price"]
 
         if price <= trade["stop_loss"]:
-            result = f"❌ صفقة خاسرة لـ {coin.upper()}.
-خسارة: {round(trade['entry'] - price, 4)}"
+            result = f"❌ صفقة خاسرة لـ {coin.upper()}.\nخسارة: {round(trade['entry'] - price, 4)}"
             closed.append((coin, result))
             del open_positions[coin]
         elif price >= trade["take_profit"]:
-            result = f"✅ صفقة رابحة لـ {coin.upper()}!
-ربح: {round(price - trade['entry'], 4)}"
+            result = f"✅ صفقة رابحة لـ {coin.upper()}!\nربح: {round(price - trade['entry'], 4)}"
             closed.append((coin, result))
             del open_positions[coin]
 
