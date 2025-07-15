@@ -12,7 +12,7 @@ async def fetch_price_data(coin_id):
                 print(f"⚠️ فشل جلب {coin_id} - Status {response.status_code}")
                 return None
 
-            print(f"✅ تم جلب {coin_id} - Status {response.status_code}")  # ← السطر المضاف
+            print(f"✅ تم جلب {coin_id} - Status {response.status_code}")  # ← تمت إضافته هنا
 
             data = response.json()
             market = data.get("market_data", {})
