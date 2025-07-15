@@ -1,3 +1,4 @@
+import asyncio  # ← تمت إضافته هنا
 from utils.logger import log
 from utils.data_fetcher import fetch_price_data
 
