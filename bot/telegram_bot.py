@@ -33,7 +33,11 @@ def report(message):
     if medium:
         msg += "✅ فرص متوسطة (2 شروط):\n" + "\n".join(medium) + "\n\n"
 
-    msg += "⚠️ باقي العملات لم تتحقق فيها الشروط."
+    msg += "⚠️ باقي العملات لم تتحقق فيها الشروط.\n"
+
+    if scheduler.last_analysis_time:
+        msg += f"\n🕒 آخر تحليل تم في: {scheduler.last_analysis_time}"
+
     bot.reply_to(message, msg)
 
 @bot.message_handler(func=lambda msg: True)
