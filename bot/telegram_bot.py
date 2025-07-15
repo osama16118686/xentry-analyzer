@@ -4,8 +4,8 @@ import asyncio
 from analyzer.logic import analyze_coin, analyze_all_coins
 from utils.logger import log
 from analyzer import scheduler
-from utils.bybit_client import place_order  # ← استدعاء تنفيذ الطلب
-from trade.trade_manager import open_positions  # ← نستخدمه للفحص البسيط
+from utils.bybit_client import place_order  # ← تنفيذ الصفقة
+from trade.trade_manager import open_positions
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -78,14 +78,11 @@ def status(message):
 @bot.message_handler(commands=['test_trade'])
 def test_trade(message):
     try:
-        # تجربة تنفيذ صفقة شراء وهمية بـ 10 دولار على BTCUSDT
         response = place_order(
             symbol="BTCUSDT",
             side="Buy",
             qty=0.0001,
-            entry_price=100.0,
-            stop_loss=95.0,
-            take_profit=110.0
+            entry_price=100.0
         )
         if response and "retCode" in response and response["retCode"] == 0:
             bot.reply_to(message, "✅ تم تنفيذ صفقة وهمية بنجاح (تم الربط مع Bybit).")
