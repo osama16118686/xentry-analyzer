@@ -85,3 +85,7 @@ def help_command(message):
         "/help – عرض هذه القائمة 📘"
     )
     bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
+
+print("✅ Bot is running...")
+bot.polling()
+
