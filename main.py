@@ -72,3 +72,16 @@ threading.Thread(target=run_analysis_loop, daemon=True).start()
 
 print("✅ Bot is running...")
 bot.polling()
+@bot.message_handler(commands=['help'])
+def help_command(message):
+    help_text = (
+        "🧠 *Xentry Crypto Bot – قائمة الأوامر:*\n\n"
+        "/start – بدء المحادثة\n"
+        "/analyzed – عرض العملات التي تم تحليلها ✅\n"
+        "/conditions – العملات التي تحقق شرط واحد أو أكثر ⚠️\n"
+        "/alerted – عرض أقوى الصفقات (نسبة ≥ 70٪)\n"
+        "/check <رمز العملة> – تحليل عملة + الرسم البياني\n"
+        "/watch <رمز السعر> – مراقبة عملة وتنبيه عند الوصول\n"
+        "/help – عرض هذه القائمة 📘"
+    )
+    bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
