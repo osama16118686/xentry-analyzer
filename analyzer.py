@@ -1,4 +1,5 @@
 import requests
+import os
 from utils import calculate_rsi, calculate_ma, detect_support_levels, save_analysis_result
 
 def analyze_top_30():
@@ -67,6 +68,10 @@ def analyze_top_30():
                 f"✅ شروط محققة: {conditions}/3\n"
                 f"🎯 أفضل سعر شراء: {best_buy}$"
             )
+
+    # تأكد من وجود مجلد data قبل الحفظ
+    if not os.path.exists("data"):
+        os.makedirs("data")
 
     save_analysis_result(results, strong_alerts)
 
