@@ -34,7 +34,7 @@ def analyze_top_100():
         results.append((symbol, conditions, best_buy))
 
         if conditions >= 3:
-            strong_alerts.append(f"🚨 {symbol} - فرصة ممتازة
+            strong_alerts.append(f"🚨 {symbol} - فرصة ممتازة\\nأفضل سعر شراء: {best_buy}$")
 أفضل سعر شراء: {best_buy}$")
 
     save_analysis_result(results, strong_alerts)
