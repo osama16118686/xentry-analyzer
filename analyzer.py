@@ -17,9 +17,11 @@ def analyze_top_30():
     analyzed_symbols = []
     analyzed_count = 0
     failed_count = 0
+    fetched_symbols = []
 
     for coin in data:
         symbol = coin['symbol'].lower()
+        fetched_symbols.append(symbol.upper())
         if symbol in stablecoins:
             continue
 
@@ -46,7 +48,6 @@ def analyze_top_30():
         supports = detect_support_levels(historical)
         best_buy = supports[0] if supports else round(price * 0.97, 2)
 
-        # رمز الحالة
         if conditions >= 3:
             status = "✅"
         elif conditions == 2:
@@ -74,6 +75,7 @@ def analyze_top_30():
     with open("data/analyzed_symbols.txt", "w") as f:
         f.write("\n".join(analyzed_symbols))
 
+    print(f"✅ تم جلب {len(fetched_symbols)} عملة: {', '.join(fetched_symbols)}")
     print(f"✅ تم تحليل {analyzed_count} عملة بنجاح (استثناء {failed_count} عملة لعدم توفر البيانات).")
 
 def get_historical_data(coin_id):
