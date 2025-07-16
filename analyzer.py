@@ -1,9 +1,9 @@
 import requests
 from utils import calculate_rsi, calculate_ma, detect_support_levels, save_analysis_result
 
-def analyze_top_100():
+def analyze_top_30():
     url = "https://api.coingecko.com/api/v3/coins/markets"
-    params = {"vs_currency": "usd", "order": "market_cap_desc", "per_page": 100, "page": 1}
+    params = {"vs_currency": "usd", "order": "market_cap_desc", "per_page": 30, "page": 1}
     response = requests.get(url, params=params)
     data = response.json()
 
@@ -27,7 +27,7 @@ def analyze_top_100():
         price = coin['current_price']
         historical = get_historical_data(coin['id'])
 
-        if not historical or len(historical) < 100:
+        if not historical or len(historical) < 50:
             failed_count += 1
             continue
 
@@ -46,7 +46,7 @@ def analyze_top_100():
         supports = detect_support_levels(historical)
         best_buy = supports[0] if supports else round(price * 0.97, 2)
 
-        # تحديد رمز الحالة
+        # رمز الحالة
         if conditions >= 3:
             status = "✅"
         elif conditions == 2:
@@ -69,7 +69,6 @@ def analyze_top_100():
 
     save_analysis_result(results, strong_alerts)
 
-    # حفظ العملات التي تم تحليلها
     if not analyzed_symbols:
         analyzed_symbols.append("❌ لم يتم تحليل أي عملة.")
     with open("data/analyzed_symbols.txt", "w") as f:
