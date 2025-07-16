@@ -39,8 +39,7 @@ def check_watchlist_prices(bot):
 
         # إذا السعر الحالي قريب من الهدف بـ3%
         if abs(current - target) / target <= 0.03:
-            message = f"👁️ {symbol} اقترب من السعر المحدد {target}$
-السعر الحالي: {current}$"
+            message = f"👁️ {symbol} اقترب من السعر المحدد {target}$\\nالسعر الحالي: {current}$"
             bot.send_message(1795891469, message)  # استخدم معرفك هنا أو خزّنه ديناميكياً
 
 def get_coin_id(symbol):
