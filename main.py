@@ -6,11 +6,8 @@ from watchlist import add_to_watchlist, check_watchlist_prices
 from utils import summarize_analysis
 import threading, time
 
-# تحميل التوكن من .env
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
-
-# أوامر Telegram
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -62,7 +59,7 @@ def conditions_command(message):
 @bot.message_handler(commands=['help'])
 def help_command(message):
     help_text = (
-        "🧠 *Xentry Crypto Bot – قائمة الأوامر:*\n\n"
+        "🧠 Xentry Crypto Bot – قائمة الأوامر:\n\n"
         "/start – بدء المحادثة\n"
         "/analyzed – عرض العملات التي تم تحليلها ✅\n"
         "/conditions – العملات التي تحقق شرط واحد أو أكثر ⚠️\n"
@@ -72,7 +69,7 @@ def help_command(message):
         "/analyze_now – تنفيذ التحليل الآن يدويًا 🧠\n"
         "/help – عرض هذه القائمة 📘"
     )
-    bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
+    bot.send_message(message.chat.id, help_text)  # بدون parse_mode
 
 @bot.message_handler(commands=['analyze_now'])
 def analyze_now_command(message):
@@ -83,14 +80,6 @@ def analyze_now_command(message):
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ حدث خطأ أثناء التحليل: {e}")
 
-# تشغيل الفحص الدوري كل 30 دقيقة
-def run_analysis_loop():
-    while True:
-        analyze_top_100()
-        check_watchlist_prices(bot)
-        time.sleep(1800)
-
-threading.Thread(target=run_analysis_loop, daemon=True).start()
 @bot.message_handler(commands=['analyzed_list'])
 def analyzed_list_command(message):
     try:
@@ -104,6 +93,13 @@ def analyzed_list_command(message):
     except:
         bot.send_message(message.chat.id, "❌ لا يمكن قراءة قائمة العملات المحللة.")
 
+def run_analysis_loop():
+    while True:
+        analyze_top_100()
+        check_watchlist_prices(bot)
+        time.sleep(1800)
+
+threading.Thread(target=run_analysis_loop, daemon=True).start()
 
 print("✅ Bot is running...")
 bot.polling()
