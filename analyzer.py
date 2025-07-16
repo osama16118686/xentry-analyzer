@@ -16,6 +16,7 @@ def analyze_top_100():
     results = []
     analyzed_symbols = []
     analyzed_count = 0
+    failed_count = 0
 
     for coin in data:
         symbol = coin['symbol'].lower()
@@ -26,7 +27,8 @@ def analyze_top_100():
         price = coin['current_price']
         historical = get_historical_data(coin['id'])
 
-        if not historical:
+        if not historical or len(historical) < 100:
+            failed_count += 1
             continue
 
         rsi = calculate_rsi(historical)
@@ -44,7 +46,17 @@ def analyze_top_100():
         supports = detect_support_levels(historical)
         best_buy = supports[0] if supports else round(price * 0.97, 2)
 
-        results.append((symbol_upper, conditions, best_buy))
+        # تحديد رمز الحالة
+        if conditions >= 3:
+            status = "✅"
+        elif conditions == 2:
+            status = "⚠️"
+        elif conditions == 1:
+            status = "❗"
+        else:
+            status = "❌"
+
+        results.append((symbol_upper, f"{conditions} {status}", best_buy))
         analyzed_symbols.append(symbol_upper)
         analyzed_count += 1
 
@@ -58,10 +70,12 @@ def analyze_top_100():
     save_analysis_result(results, strong_alerts)
 
     # حفظ العملات التي تم تحليلها
+    if not analyzed_symbols:
+        analyzed_symbols.append("❌ لم يتم تحليل أي عملة.")
     with open("data/analyzed_symbols.txt", "w") as f:
         f.write("\n".join(analyzed_symbols))
 
-    print(f"✅ تم تحليل {analyzed_count} عملة (بعد استثناء العملات المستقرة).")
+    print(f"✅ تم تحليل {analyzed_count} عملة بنجاح (استثناء {failed_count} عملة لعدم توفر البيانات).")
 
 def get_historical_data(coin_id):
     try:
