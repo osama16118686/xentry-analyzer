@@ -91,6 +91,19 @@ def run_analysis_loop():
         time.sleep(1800)
 
 threading.Thread(target=run_analysis_loop, daemon=True).start()
+@bot.message_handler(commands=['analyzed_list'])
+def analyzed_list_command(message):
+    try:
+        with open("data/analyzed_symbols.txt", "r") as f:
+            symbols = f.read().splitlines()
+        if symbols:
+            text = "✅ العملات التي تم تحليلها:\n- " + "\n- ".join(symbols)
+        else:
+            text = "❌ لا توجد عملات تم تحليلها بعد."
+        bot.send_message(message.chat.id, text)
+    except:
+        bot.send_message(message.chat.id, "❌ لا يمكن قراءة قائمة العملات المحللة.")
+
 
 print("✅ Bot is running...")
 bot.polling()
