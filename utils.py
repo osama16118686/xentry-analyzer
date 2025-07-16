@@ -1,4 +1,3 @@
-
 import numpy as np
 import os
 
@@ -36,6 +35,18 @@ def save_analysis_result(results, strong_alerts):
 def summarize_analysis():
     try:
         with open("data/analysis.txt", "r") as f:
-            return f.read() or "لا توجد بيانات حالياً."
+            lines = f.readlines()
+        if not lines:
+            return "❌ لا توجد بيانات حالياً."
+
+        message = "📋 *تقرير العملات التي تم تحليلها:*\n\n"
+        for line in lines:
+            parts = line.strip().split("|")
+            if len(parts) == 3:
+                symbol = parts[0].strip()
+                conditions = parts[1].replace("شروط:", "").strip()
+                buy_price = parts[2].replace("شراء:", "").strip()
+                message += f"🔹 *{symbol}* | شروط: {conditions} | 💰 شراء: {buy_price}$\n"
+        return message
     except:
         return "❌ لم يتم تنفيذ أي تحليل بعد."
