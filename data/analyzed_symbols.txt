@@ -1,0 +1,2 @@
+with open("data/analyzed_symbols.txt", "w") as f:
+    f.write("\n".join(analyzed_symbols))
