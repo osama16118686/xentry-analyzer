@@ -50,3 +50,19 @@ def summarize_analysis():
         return message
     except:
         return "❌ لم يتم تنفيذ أي تحليل بعد."
+
+def get_analyzed_symbols():
+    try:
+        with open("data/analysis.txt", "r") as f:
+            lines = f.readlines()
+        if not lines:
+            return []
+        symbols = []
+        for line in lines:
+            parts = line.strip().split("|")
+            if parts:
+                symbol = parts[0].strip()
+                symbols.append(symbol)
+        return symbols
+    except:
+        return []
