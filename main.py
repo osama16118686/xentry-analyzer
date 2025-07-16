@@ -86,6 +86,7 @@ def help_command(message):
     )
     bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
 
+# ⚠️ هذا يجب أن يكون آخر سطر
 print("✅ Bot is running...")
 bot.polling()
 
