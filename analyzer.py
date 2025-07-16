@@ -12,11 +12,17 @@ def analyze_top_100():
         print("❌ الاستجابة غير متوقعة من CoinGecko:", data)
         return
 
+    stablecoins = ['usdt', 'usdc', 'busd', 'dai', 'tusd', 'usdd', 'gusd', 'eurt']
     strong_alerts = []
     results = []
+    analyzed_count = 0
 
     for coin in data:
-        symbol = coin['symbol'].upper()
+        symbol = coin['symbol'].lower()
+        if symbol in stablecoins:
+            continue  # تجاهل العملات المستقرة
+
+        symbol_upper = symbol.upper()
         price = coin['current_price']
         historical = get_historical_data(coin['id'])
 
@@ -38,14 +44,15 @@ def analyze_top_100():
         supports = detect_support_levels(historical)
         best_buy = supports[0] if supports else round(price * 0.97, 2)
 
-        results.append((symbol, conditions, best_buy))
+        results.append((symbol_upper, conditions, best_buy))
+        analyzed_count += 1
 
         if conditions >= 3:
-            strong_alerts.append(f"""🚨 {symbol} - فرصة ممتازة
+            strong_alerts.append(f"""🚨 {symbol_upper} - فرصة ممتازة
 🎯 أفضل سعر شراء: {best_buy}$""")
 
     save_analysis_result(results, strong_alerts)
-
+    print(f"✅ تم تحليل {analyzed_count} عملة (بعد استثناء العملات المستقرة).")
 
 def get_historical_data(coin_id):
     try:
