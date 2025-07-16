@@ -7,7 +7,6 @@ def analyze_top_100():
     response = requests.get(url, params=params)
     data = response.json()
 
-    # التحقق من صحة الاستجابة
     if not isinstance(data, list):
         print("❌ الاستجابة غير متوقعة من CoinGecko:", data)
         return
@@ -15,12 +14,13 @@ def analyze_top_100():
     stablecoins = ['usdt', 'usdc', 'busd', 'dai', 'tusd', 'usdd', 'gusd', 'eurt']
     strong_alerts = []
     results = []
+    analyzed_symbols = []
     analyzed_count = 0
 
     for coin in data:
         symbol = coin['symbol'].lower()
         if symbol in stablecoins:
-            continue  # تجاهل العملات المستقرة
+            continue
 
         symbol_upper = symbol.upper()
         price = coin['current_price']
@@ -45,13 +45,22 @@ def analyze_top_100():
         best_buy = supports[0] if supports else round(price * 0.97, 2)
 
         results.append((symbol_upper, conditions, best_buy))
+        analyzed_symbols.append(symbol_upper)
         analyzed_count += 1
 
         if conditions >= 3:
-            strong_alerts.append(f"""🚨 {symbol_upper} - فرصة ممتازة
-🎯 أفضل سعر شراء: {best_buy}$""")
+            strong_alerts.append(
+                f"🚨 {symbol_upper} - فرصة ممتازة\n"
+                f"✅ شروط محققة: {conditions}/3\n"
+                f"🎯 أفضل سعر شراء: {best_buy}$"
+            )
 
     save_analysis_result(results, strong_alerts)
+
+    # حفظ العملات التي تم تحليلها
+    with open("data/analyzed_symbols.txt", "w") as f:
+        f.write("\n".join(analyzed_symbols))
+
     print(f"✅ تم تحليل {analyzed_count} عملة (بعد استثناء العملات المستقرة).")
 
 def get_historical_data(coin_id):
@@ -60,7 +69,7 @@ def get_historical_data(coin_id):
         params = {"vs_currency": "usd", "days": 30, "interval": "hourly"}
         response = requests.get(url, params=params)
         prices = [item[1] for item in response.json().get("prices", [])]
-        return prices[-240:]  # آخر 10 أيام × 24 ساعة ÷ 4 = 240 (شموع 4 ساعات)
+        return prices[-240:]
     except Exception as e:
         print(f"❌ خطأ في جلب البيانات لـ {coin_id}: {str(e)}")
         return []
