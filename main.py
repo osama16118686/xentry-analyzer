@@ -70,8 +70,6 @@ def run_analysis_loop():
 
 threading.Thread(target=run_analysis_loop, daemon=True).start()
 
-print("✅ Bot is running...")
-bot.polling()
 @bot.message_handler(commands=['help'])
 def help_command(message):
     help_text = (
@@ -85,8 +83,7 @@ def help_command(message):
         "/help – عرض هذه القائمة 📘"
     )
     bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
-
-# ⚠️ هذا يجب أن يكون آخر سطر
 print("✅ Bot is running...")
 bot.polling()
+
 
