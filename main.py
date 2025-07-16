@@ -83,9 +83,7 @@ def help_command(message):
         "/help – عرض هذه القائمة 📘"
     )
     bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
-print("✅ Bot is running...")
-bot.polling()
-@bot.message_handler(commands=['analyze_now'])
+    @bot.message_handler(commands=['analyze_now'])
 def analyze_now_command(message):
     bot.send_message(message.chat.id, "📊 جاري تشغيل التحليل الآن...")
     try:
@@ -93,5 +91,8 @@ def analyze_now_command(message):
         bot.send_message(message.chat.id, "✅ تم تنفيذ التحليل بنجاح.")
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ حدث خطأ أثناء التحليل: {e}")
+print("✅ Bot is running...")
+bot.polling()
+
 
 
