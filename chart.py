@@ -38,9 +38,9 @@ def generate_chart_with_support(symbol):
     plt.savefig(f"/mnt/data/{img_path}")
     plt.close()
 
-    summary = f"💰 {symbol}
+    summary = f"""💰 {symbol}
 🎯 أفضل سعر شراء: {best_buy}$
-🛡️ خطوط الدعم: " + ", ".join([f"{s:.2f}" for s in supports[:3]])
+🛡️ خطوط الدعم: {", ".join([f"{s:.2f}" for s in supports[:3]])}"""
     return f"/mnt/data/{img_path}", summary
 
 def get_coin_id(symbol):
