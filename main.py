@@ -4,7 +4,7 @@ import os
 from analyzer import analyze_top_100
 from chart import generate_chart_with_support
 from watchlist import add_to_watchlist, check_watchlist_prices
-from utils import load_env, summarize_analysis
+from utils import summarize_analysis
 
 # تحميل التوكن من .env
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
