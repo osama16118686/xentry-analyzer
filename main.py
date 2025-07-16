@@ -1,10 +1,10 @@
-
 import telebot
 import os
 from analyzer import analyze_top_100
 from chart import generate_chart_with_support
 from watchlist import add_to_watchlist, check_watchlist_prices
 from utils import summarize_analysis
+import threading, time
 
 # تحميل التوكن من .env
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
@@ -59,17 +59,6 @@ def conditions_command(message):
     except:
         bot.send_message(message.chat.id, "❌ لم يتم العثور على بيانات تحليل.")
 
-# تشغيل الفحص الدوري كل 30 دقيقة
-import threading, time
-
-def run_analysis_loop():
-    while True:
-        analyze_top_100()
-        check_watchlist_prices(bot)
-        time.sleep(1800)  # 30 دقيقة
-
-threading.Thread(target=run_analysis_loop, daemon=True).start()
-
 @bot.message_handler(commands=['help'])
 def help_command(message):
     help_text = (
@@ -80,10 +69,12 @@ def help_command(message):
         "/alerted – عرض أقوى الصفقات (نسبة ≥ 70٪)\n"
         "/check <رمز العملة> – تحليل عملة + الرسم البياني\n"
         "/watch <رمز السعر> – مراقبة عملة وتنبيه عند الوصول\n"
+        "/analyze_now – تنفيذ التحليل الآن يدويًا 🧠\n"
         "/help – عرض هذه القائمة 📘"
     )
     bot.send_message(message.chat.id, help_text, parse_mode="Markdown")
-    @bot.message_handler(commands=['analyze_now'])
+
+@bot.message_handler(commands=['analyze_now'])
 def analyze_now_command(message):
     bot.send_message(message.chat.id, "📊 جاري تشغيل التحليل الآن...")
     try:
@@ -91,8 +82,15 @@ def analyze_now_command(message):
         bot.send_message(message.chat.id, "✅ تم تنفيذ التحليل بنجاح.")
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ حدث خطأ أثناء التحليل: {e}")
+
+# تشغيل الفحص الدوري كل 30 دقيقة
+def run_analysis_loop():
+    while True:
+        analyze_top_100()
+        check_watchlist_prices(bot)
+        time.sleep(1800)
+
+threading.Thread(target=run_analysis_loop, daemon=True).start()
+
 print("✅ Bot is running...")
 bot.polling()
-
-
-
