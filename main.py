@@ -15,7 +15,7 @@ def start_message(message):
 
 @bot.message_handler(commands=['analyzed'])
 def analyzed_command(message):
-    result = summarize_analysis()
+    result = summarize_analysis()  # يستخدم التحليل المحفوظ من analysis.txt
     bot.send_message(message.chat.id, result)
 
 @bot.message_handler(commands=['alerted'])
@@ -69,7 +69,7 @@ def help_command(message):
         "/analyze_now – تنفيذ التحليل الآن يدويًا 🧠\n"
         "/help – عرض هذه القائمة 📘"
     )
-    bot.send_message(message.chat.id, help_text)  # بدون parse_mode
+    bot.send_message(message.chat.id, help_text)  # بدون parse_mode لتجنب خطأ Markdown
 
 @bot.message_handler(commands=['analyze_now'])
 def analyze_now_command(message):
@@ -97,7 +97,7 @@ def run_analysis_loop():
     while True:
         analyze_top_100()
         check_watchlist_prices(bot)
-        time.sleep(1800)
+        time.sleep(1800)  # كل 30 دقيقة
 
 threading.Thread(target=run_analysis_loop, daemon=True).start()
 
