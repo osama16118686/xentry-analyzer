@@ -1,6 +1,6 @@
 import telebot
 import os
-from analyzer import analyze_top_100
+from analyzer import analyze_top_30
 from chart import generate_chart_with_support
 from watchlist import add_to_watchlist, check_watchlist_prices
 from utils import summarize_analysis
@@ -15,7 +15,7 @@ def start_message(message):
 
 @bot.message_handler(commands=['analyzed'])
 def analyzed_command(message):
-    result = summarize_analysis()  # يستخدم التحليل المحفوظ من analysis.txt
+    result = summarize_analysis()
     bot.send_message(message.chat.id, result)
 
 @bot.message_handler(commands=['alerted'])
@@ -69,13 +69,13 @@ def help_command(message):
         "/analyze_now – تنفيذ التحليل الآن يدويًا 🧠\n"
         "/help – عرض هذه القائمة 📘"
     )
-    bot.send_message(message.chat.id, help_text)  # بدون parse_mode لتجنب خطأ Markdown
+    bot.send_message(message.chat.id, help_text)
 
 @bot.message_handler(commands=['analyze_now'])
 def analyze_now_command(message):
     bot.send_message(message.chat.id, "📊 جاري تشغيل التحليل الآن...")
     try:
-        analyze_top_100()
+        analyze_top_30()
         bot.send_message(message.chat.id, "✅ تم تنفيذ التحليل بنجاح.")
     except Exception as e:
         bot.send_message(message.chat.id, f"❌ حدث خطأ أثناء التحليل: {e}")
@@ -95,9 +95,9 @@ def analyzed_list_command(message):
 
 def run_analysis_loop():
     while True:
-        analyze_top_100()
+        analyze_top_30()
         check_watchlist_prices(bot)
-        time.sleep(1800)  # كل 30 دقيقة
+        time.sleep(1800)
 
 threading.Thread(target=run_analysis_loop, daemon=True).start()
 
