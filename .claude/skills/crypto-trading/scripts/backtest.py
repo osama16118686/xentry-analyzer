@@ -49,7 +49,7 @@ STRATEGIES = ["confluence", "trend_pullback", "breakout", "mean_reversion"]
 
 
 def run(df, strategy, stop_atr=1.5, target_atr=3.0, risk_pct=1.0, fee_pct=0.1, slippage_pct=0.05,
-        sides="both", adx_min=20):
+        sides="both", adx_min=20, keep_trades=5):
     d = add_all(df).iloc[200:]  # skip EMA200 warm-up
     long_sig, short_sig = (s.to_numpy() for s in signals(d, strategy, adx_min))
     if sides == "long":
@@ -122,7 +122,7 @@ def run(df, strategy, stop_atr=1.5, target_atr=3.0, risk_pct=1.0, fee_pct=0.1, s
         "total_return_pct": round((equity - 1) * 100, 2),
         "max_drawdown_pct": round(max_dd * 100, 2),
         "buy_and_hold_pct": round((c[-1] / o[0] - 1) * 100, 2),
-        "last_trades": trades[-5:],
+        "last_trades": trades[-keep_trades:],
         "reliable": len(trades) >= 30,
     }
 
