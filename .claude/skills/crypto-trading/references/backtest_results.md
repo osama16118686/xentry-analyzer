@@ -253,3 +253,20 @@ ended above its $13,333 share (BTC $17,387, ETH $17,459, SOL $21,633); 568 longs
 positive after costs. It needs shorts (futures): long-only on spot kept +14.9%.
 The model raises the win rate a few points above the base rate; the edge per trade is
 small (avg 0.09R after costs), so fees and execution decide most of the result.
+
+### BTC and ETH only ($20,000 each, 1:1, walk-forward 2022-03 → 2026-11)
+
+| model trained on | threshold | costs, risk | final | return | max DD | trades | win % | PF |
+|---|---|---|---|---|---|---|---|---|
+| BTC+ETH | 0.60 | futures taker + BNB, 1% | $48,168 | +20.4% | 14.8% | 977 | 54.4 | 1.09 |
+| BTC+ETH | 0.65 | futures taker + BNB, 1% | $51,830 | +29.6% | 7.0% | 480 | 57.9 | 1.26 |
+| BTC+ETH+SOL (trade BTC+ETH) | 0.55 | futures taker + BNB, 1% | $36,817 | −8.0% | 19.3% | 1588 | 52.0 | 0.99 |
+| **BTC+ETH+SOL (trade BTC+ETH)** | **0.60** | **futures taker + BNB, 1%** | **$52,269** | **+30.7%** | **9.3%** | 786 | **55.9** | 1.16 |
+| BTC+ETH+SOL (trade BTC+ETH) | 0.60 | futures taker + BNB, 2% | $69,617 | +74.0% | 16.3% | 786 | 55.9 | 1.19 |
+| BTC+ETH+SOL (trade BTC+ETH) | 0.65 | futures taker + BNB, 1% | $46,450 | +16.1% | 10.3% | 358 | 56.7 | 1.19 |
+
+Trained on three coins, trading BTC+ETH at 0.60 (the threshold fixed in the first
+run): every year positive (2022 +12R, 2023 +9R, 2024 +9R, 2025 +16R, 2026 +12R),
+BTC $26,080 and ETH $26,189 from $20,000 each, last 12 months 112 trades, 58% won.
+Weaker than with SOL included, and 0.55 turns negative after costs, so the edge on
+BTC+ETH alone is thin.

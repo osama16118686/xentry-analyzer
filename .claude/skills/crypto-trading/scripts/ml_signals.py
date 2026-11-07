@@ -6,7 +6,11 @@ trade (stop = 1.5 ATR, target = rr x stop) reaches its target before its stop wi
 
 Usage:
   python ml_signals.py backtest BTCUSDT ETHUSDT SOLUSDT --interval 4h --rr 1 --capital 40000
-  python ml_signals.py signal   BTCUSDT ETHUSDT SOLUSDT --interval 4h --rr 1 --capital 40000
+  python ml_signals.py signal   BTCUSDT ETHUSDT SOLUSDT --trade BTCUSDT ETHUSDT --threshold 0.6
+
+All listed symbols are used to train; `--trade` limits which of them are traded (the
+capital is split across the traded coins). More coins give the model more examples:
+trained on BTC+ETH+SOL and trading only BTC+ETH beat a model trained on BTC+ETH alone.
 
 backtest: walk-forward. Each month the model is retrained on every trade whose
           outcome was already known before that month, then predicts that month.
@@ -165,9 +169,10 @@ def summary(curves, trades, capital):
             "profit_factor": round(wins.sum() / -losses.sum(), 2) if len(losses) and losses.sum() < 0 else None}
 
 
-def backtest(raw, capital, thresholds, stop_atr, rr, horizon, start, fee, slip):
+def backtest(raw, capital, thresholds, stop_atr, rr, horizon, start, fee, slip, trade=None):
     rows = build(raw, stop_atr, rr, horizon)
     preds, _ = walk_forward(rows, start)
+    rows = [r for r in rows if not trade or r[0] in trade]
     allf = pd.concat([f for _, _, f in rows])
     test_rows = allf.loc[allf.index >= preds.index.min()]
     base = {"base_rate_long_pct": round(test_rows["y_long"].mean() * 100, 1),
@@ -185,13 +190,14 @@ def backtest(raw, capital, thresholds, stop_atr, rr, horizon, start, fee, slip):
     return out
 
 
-def signal(raw, capital, threshold, stop_atr, rr, horizon):
+def signal(raw, capital, threshold, stop_atr, rr, horizon, trade=None):
     rows = build(raw, stop_atr, rr, horizon)
     allf = pd.concat([f for _, _, f in rows])
     cols = [c for c in allf.columns if c not in ("coin", "y_long", "y_short", "known_at")]
     train = allf[allf["y_long"].notna()]
     mdl = {s: model().fit(train[cols], train[f"y_{s}"]) for s in ("long", "short")}
     plans = {}
+    rows = [r for r in rows if not trade or r[0] in trade]
     share = capital / len(rows)
     for sym, d, f in rows:
         x = f[cols].iloc[[-1]]
@@ -215,6 +221,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("mode", choices=["backtest", "signal"])
     p.add_argument("symbols", nargs="*", default=["BTCUSDT", "ETHUSDT", "SOLUSDT"])
+    p.add_argument("--trade", nargs="+", help="trade only these of the training symbols")
     p.add_argument("--interval", default="4h")
     p.add_argument("--limit", type=int, default=15000)
     p.add_argument("--capital", type=float, default=40000)
@@ -229,10 +236,10 @@ if __name__ == "__main__":
     raw = {s: fetch_klines(s, a.interval, a.limit) for s in a.symbols}
     if a.mode == "backtest":
         res = backtest(raw, a.capital, a.threshold, a.stop_atr, a.rr, a.horizon,
-                       pd.Timestamp(a.start, tz="UTC"), a.fee, a.slippage)
+                       pd.Timestamp(a.start, tz="UTC"), a.fee, a.slippage, a.trade)
     else:
         # decide only on closed candles, as in the backtest
         now = pd.Timestamp.now(tz="UTC")
         raw = {s: df if df.index[-1] + pd.Timedelta(a.interval) <= now else df.iloc[:-1] for s, df in raw.items()}
-        res = signal(raw, a.capital, a.threshold[0], a.stop_atr, a.rr, a.horizon)
+        res = signal(raw, a.capital, a.threshold[0], a.stop_atr, a.rr, a.horizon, a.trade)
     print(json.dumps(res, ensure_ascii=False, indent=2))
