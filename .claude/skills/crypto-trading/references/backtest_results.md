@@ -167,3 +167,30 @@ positive without costs (+3.0% at 0.02%, +3.9% at zero) on only 90 trades in 3.4 
 
 **Conclusion: no tested day-trading setup with 1:2 made money after realistic costs.**
 The daily trend filter that rescued the daily breakout strategy did not rescue them.
+
+## Published intraday effects, replicated on Binance 1h 2023-06 → 2026-11 (run 2026-11-07)
+
+1. **Intraday time-series momentum** (Shen, Urquhart & Wang, Financial Review 2022):
+   first-hour sign → last hour, and 00–22h sign → last 2 hours. Gross edge 0.6–3.2 bp
+   per trade, t-stat −0.4 to 1.6: **not replicated**.
+2. **Time of day** (Padysak & Vojtko 2022, Gemini 2015–2022: best hours 21–23 UTC):
+   long from the 21:00 open to the 23:00 open every day. Gross per trade: BTC 6.4 bp
+   (t 3.4), ETH 10.0 bp (t 3.8), SOL 10.7 bp (t 2.9), positive in 3–4 of 4 years:
+   **replicated on independent data**. BTC hourly averages: 21h +2.6 bp, 22h +3.8 bp
+   (8h +3.5 bp also high; 23h −2.2 bp).
+
+$40,000 split equally across BTC/ETH/SOL every evening, by round-trip cost:
+
+| cost per round trip | every day: final / CAGR / max DD | daily-uptrend days only |
+|---|---|---|
+| zero | $118,032 / 37.2% / 13.5% | $59,443 / 12.3% / 9.4% |
+| 0.04% (futures maker 0.02% ×2) | $71,612 / 18.6% / 18.5% | $49,656 / 6.5% / 10.8% |
+| 0.06% (maker + 1 bp slippage each side) | $55,776 / 10.2% / 21.3% | $45,383 / 3.8% / 11.5% |
+| 0.15% (spot maker with BNB) | $18,103 / −20.7% / 54.9% | $30,267 / −7.8% / 30.8% |
+| 0.30% (taker + slippage) | $2,769 / −54.2% / 93.1% | $15,397 / −24.4% / 62.4% |
+
+Yearly at 0.04%: 2023 (Jun–Dec) +10.1%, 2024 +50.4%, 2025 +15.9%, 2026 −6.9%.
+The edge is real but about 0.06–0.11% per trade, so it only survives with near-zero
+costs (futures limit orders; maker fills are not guaranteed and tend to miss the best
+days), it weakened in 2025–2026, and the daily trend filter hurt it. Only a paper
+trade measuring real fills and fees can tell whether it is usable.
