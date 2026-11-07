@@ -220,3 +220,36 @@ Winner on the unseen last year, $40,000, 1,095 trades:
 Adding a 1 ATR stop with a 1:1 / 1:1.5 / 1:2 / 1:3 target to the evening trade made
 it worse (last year, maker + BNB: −10.3% / −6.8% / −7.0% / −4.5%). The pullback setup
 stayed near zero at every R:R (40 trades, −0.2% to +0.5% after taker + BNB).
+
+## Machine-learning signals, walk-forward (run 2026-11-07)
+
+`scripts/ml_signals.py`: gradient boosting (sklearn HistGradientBoosting, depth 3, 200
+trees, fixed in advance, not tuned) on 25 features (returns 1–48 candles, BTC returns,
+RSI, MACD, ADX, ATR %, volatility regime, Bollinger position, distance to EMA20/50/200
+and to 20-candle high/low, volume ratio, hour, weekday). Label: would a trade entered at
+the next open with stop 1.5 ATR and target rr × stop hit the target first within 30
+candles. One model for longs, one for shorts, pooled over BTC/ETH/SOL 4h (2020–2026).
+Retrained monthly on outcomes already known before the month; tested 2022-03 → 2026-11.
+$40,000 split per coin, 1% risk, no leverage, one trade per coin at a time.
+
+Base rate (no model): a 1:1 trade wins 48–50% of the time, a 1:2 trade 28–29%.
+
+| R:R | threshold | costs | final | return | max DD | trades | win % | PF |
+|---|---|---|---|---|---|---|---|---|
+| 1:1 | 0.60 | none | $68,513 | +71.3% | 4.7% | 1150 | 57.3 | 1.35 |
+| 1:1 | 0.55 | futures taker + BNB | $54,356 | +35.9% | 8.4% | 2413 | 53.7 | 1.06 |
+| **1:1** | **0.60** | **futures taker + BNB** | **$56,479** | **+41.2%** | **5.9%** | 1149 | **56.6** | 1.21 |
+| 1:1 | 0.65 | futures taker + BNB | $47,658 | +19.1% | 5.8% | 507 | 57.2 | 1.25 |
+| 1:1 | 0.60 | futures taker + BNB, risk 2% | $80,415 | +101.0% | 12.3% | 1149 | 56.6 | 1.24 |
+| 1:1 | 0.60 | spot + BNB, long only | $45,948 | +14.9% | 6.9% | 602 | 57.3 | 1.16 |
+| 1:2 | 0.50 | futures taker + BNB | $46,655 | +16.6% | 5.6% | 322 | 41.0 | 1.25 |
+| 1:2 | 0.60 | futures taker + BNB | $42,238 | +5.6% | 2.8% | 88 | 42.0 | 1.29 |
+
+1:1 at 0.60, futures taker + BNB, by year (trades, win %, sum of R): 2022 301 / 54.5% /
++20.5R, 2023 321 / 56.7% / +27.7R, 2024 205 / 54.6% / +11.6R, 2025 169 / 60.4% / +26.3R,
+2026 153 / 58.8% / +21.2R; last 12 months 173 trades, 59.5% won, +26.6R. Every coin
+ended above its $13,333 share (BTC $17,387, ETH $17,459, SOL $21,633); 568 longs,
+581 shorts. Positive in every year and on every coin, with thresholds 0.55–0.65 all
+positive after costs. It needs shorts (futures): long-only on spot kept +14.9%.
+The model raises the win rate a few points above the base rate; the edge per trade is
+small (avg 0.09R after costs), so fees and execution decide most of the result.
