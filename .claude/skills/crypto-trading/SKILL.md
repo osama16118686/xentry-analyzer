@@ -21,6 +21,7 @@ Scripts are in `scripts/` (run from that directory; needs `pandas`, `numpy`, `re
 | `analyze.py SYMBOL --interval 4h` | Trend, EMA20/50/200, RSI, MACD, Bollinger, ATR, volume, supports/resistances, ATR reference levels |
 | `risk.py --capital C --risk 1 --entry E --stop S --target T` | Position size, R:R, break-even win rate, leverage warnings |
 | `backtest.py SYMBOL --interval 4h --strategy all --split 0.7 --limit 5000` | Backtest built-in strategies (long and short) with fees and slippage, in-sample vs out-of-sample |
+| `longterm.py BTCUSDT ETHUSDT --sma 50 100 200 --dca 100 --yearly 100` | Daily buy & hold vs trend following (close above SMA) vs weekly DCA, with CAGR and max drawdown |
 | `chart.py SYMBOL --interval 4h --bars 360 --out chart.png` | Candlestick chart with EMA50/200, support/resistance zones and past strategy signals marked won/lost (needs matplotlib) |
 | `tradingview/xentry_signals.pine` | TradingView strategy script: buy/sell signals, stop and target lines, risk-based size, alerts, indicator panel. Same logic as `backtest.py --strategy confluence` |
 

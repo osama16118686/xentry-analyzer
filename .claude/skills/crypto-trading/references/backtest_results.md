@@ -56,3 +56,29 @@ Every filter that helped in one period hurt in the other (fear_buy, contrarian,
 momentum all flip). 1000 4h candles give only ~10–36 trades across three coins,
 too few to tell anything apart. **Conclusion: the Fear & Greed index adds no
 reliable edge**; it was not added to the indicator.
+
+## Long-term: buy & hold vs daily trend following vs weekly DCA (run 2026-11-07)
+
+`scripts/longterm.py`, Binance daily closes, 0.1% fee + 0.05% slippage per switch.
+Trend = hold the coin while its daily close is above its SMA, otherwise cash. Each
+coin is an equal, separate share of the capital (no rebalancing). CAGR / max drawdown:
+
+| basket (period) | buy & hold | trend SMA50 | trend SMA100 | trend SMA200 | DCA $100/week |
+|---|---|---|---|---|---|
+| BTC (2018-03 → 2026-11) | 24.4% / −76.6% | 43.3% / −58.5% | 40.6% / −38.8% | 25.0% / −64.4% | +361% on $45.3k, worst −52% |
+| BTC+ETH (same) | 19.4% / −81.1% | 46.3% / −56.5% | 35.0% / −56.1% | 27.2% / −61.1% | +334% on $45.3k, worst −62% |
+| 8 coins* (2021-02 → 2026-11) | 15.1% / −85.3% | 39.4% / −51.2% | 11.4% / −80.8% | 31.5% / −63.6% | +24% on $29.8k, worst −56% |
+
+*BTC ETH BNB SOL XRP ADA DOGE LINK: today's large coins, so the basket has
+survivorship bias (coins that died since 2021 are not in it).
+
+BTC year by year, trend SMA100 vs hold: it lost less in down years (2018 −45% vs
+−72%, 2022 −21% vs −65%) and gained less in strong up years (2020 +166% vs +302%,
+2023 +82% vs +155%, 2024 +57% vs +112%).
+
+Reading: trend following beat holding in 8 of 9 cases and cut the worst drawdown,
+mainly by being in cash for most of the 2018 and 2022 bear markets. The result
+depends a lot on the SMA length (8 coins: SMA100 lost to holding while SMA50/200
+won), drawdowns were still 39–81%, and the sample holds only about two full
+crypto cycles. It is the only approach here with a positive result across tests,
+not a guarantee.
