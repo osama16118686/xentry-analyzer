@@ -130,3 +130,16 @@ the daily timeframe plus the trend filter is what changed the outcome. Three ent
 were tested and all three had PF > 1; breakout is the best of the three, which adds
 some selection bias. Buy & hold of BTC+ETH over the same years returned more
 (+365%) but with an 81% drawdown.
+
+### With interest on idle cash (`--cash-yield`)
+
+Same breakout test; uninvested cash earns a fixed annual rate. Final balance from $40,000:
+
+| risk per trade | no interest | 3% on cash | 5% on cash |
+|---|---|---|---|
+| 1% | $81,835 (CAGR 8.6%, DD 11.9%) | $104,037 (11.6%, 10.5%) | $121,623 (13.7%, 9.5%) |
+| 2% | $158,227 (17.2%, 22.3%) | $198,065 (20.2%, 21.2%) | $229,227 (22.3%, 20.5%) |
+
+A deposit alone at 2/3/4/5% for the same 8.68 years: $47,502 / $51,700 / $56,222 / $61,092.
+Real rates moved a lot over 2018–2026 (near zero for some years), so a fixed rate is a
+simplification.

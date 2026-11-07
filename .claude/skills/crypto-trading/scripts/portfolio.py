@@ -9,7 +9,8 @@ Long only, with the trend (EMA50 > EMA200 and close > SMA100). Every trade risks
 included), at most one open trade per coin, and total open positions never exceed
 the balance (no leverage). Entries fill at the next candle's open; a gap through
 the stop exits at the open. If stop and target are both inside one candle, the
-stop is assumed first. Fee and slippage are paid on entry and exit.
+stop is assumed first. Fee and slippage are paid on entry and exit. `--cash-yield`
+adds interest on uninvested cash (a savings or deposit rate).
 
 Entries:
   pullback  RSI crosses back above 40 (end of a dip)
@@ -44,12 +45,16 @@ def prepare(df, entry):
     return d.iloc[200:]
 
 
-def simulate(frames, capital, risk_pct, stop_atr, target_atr, fee_pct=0.1, slippage_pct=0.05):
+def simulate(frames, capital, risk_pct, stop_atr, target_atr, fee_pct=0.1, slippage_pct=0.05, cash_yield_pct=0.0):
     fee, slip = fee_pct / 100, slippage_pct / 100
     days = sorted(set().union(*[f.index for f in frames.values()]))
     cash, open_pos, trades, curve = capital, {}, [], []
     pending = {}  # coin -> signal candle's ATR, filled at next open
+    prev_t = None
     for t in days:
+        if prev_t is not None and cash_yield_pct:  # idle cash earns interest
+            cash *= (1 + cash_yield_pct / 100) ** ((t - prev_t).days / 365.25)
+        prev_t = t
         # 1) fill entries signalled on the previous candle
         for coin, a in list(pending.items()):
             f = frames[coin]
@@ -147,11 +152,12 @@ if __name__ == "__main__":
     p.add_argument("--stop-atr", type=float, default=1.5)
     p.add_argument("--target-atr", type=float, default=4.5)
     p.add_argument("--entry", default="pullback", choices=ENTRIES)
+    p.add_argument("--cash-yield", type=float, default=0.0, help="annual %% earned on uninvested cash")
     p.add_argument("--log", help="write every trade to this CSV")
     a = p.parse_args()
     raw = load(a.symbols, a.interval, a.limit)
     frames = {s: prepare(df, a.entry) for s, df in raw.items()}
-    eq, trades = simulate(frames, a.capital, a.risk, a.stop_atr, a.target_atr)
+    eq, trades = simulate(frames, a.capital, a.risk, a.stop_atr, a.target_atr, cash_yield_pct=a.cash_yield)
     if a.log:
         pd.DataFrame(trades).to_csv(a.log, index=False)
     print(json.dumps(report(eq, trades, a.capital), ensure_ascii=False, indent=2))
