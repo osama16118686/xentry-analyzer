@@ -82,3 +82,26 @@ depends a lot on the SMA length (8 coins: SMA100 lost to holding while SMA50/200
 won), drawdowns were still 39–81%, and the sample holds only about two full
 crypto cycles. It is the only approach here with a positive result across tests,
 not a guarantee.
+
+## Candlestick patterns and RSI divergence (run 2026-11-07)
+
+Same 6 data sets (BTC/ETH/SOL, 4h and 1h, 6000 candles). "Direction edge" = how
+much more often price moved the pattern's way over the next 6 candles than it does
+on an average candle. Trades: entry next open, 1.5 ATR stop, 3 ATR target, costs.
+Divergence: price lower low / higher high between confirmed pivots (5 candles each
+side, signal only after confirmation) with RSI higher low < 40 / lower high > 60.
+
+| pattern | signals | direction edge | trades | win % | avg R | PF | profitable sets |
+|---|---|---|---|---|---|---|---|
+| bullish engulfing | 3227 | −0.9% | 1408 | 31.8 | −0.20 | 0.73 | 0/6 |
+| bearish engulfing | 3392 | −2.2% | 1531 | 32.9 | −0.16 | 0.78 | 0/6 |
+| hammer | 1736 | +2.0% | 940 | 32.6 | −0.19 | 0.75 | 0/6 |
+| shooting star | 1531 | +1.8% | 881 | 29.7 | −0.26 | 0.67 | 0/6 |
+| morning star | 372 | −2.3% | 333 | 32.4 | −0.20 | 0.73 | 1/6 |
+| evening star | 426 | +0.8% | 369 | 35.2 | −0.10 | 0.86 | 1/6 |
+| RSI bullish divergence | 144 | +1.5% | 142 | 26.8 | −0.35 | 0.57 | 0/6 |
+| RSI bearish divergence | 150 | +7.4% | 143 | 32.2 | −0.19 | 0.74 | 1/6 |
+
+Direction edges are within noise (about ±1–4% standard error at these counts) and
+every pattern lost money as a stand-alone trade. Use them, if at all, as context at
+a level the plan already identified, never as a signal on their own.
