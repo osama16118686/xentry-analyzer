@@ -105,3 +105,28 @@ side, signal only after confirmation) with RSI higher low < 40 / lower high > 60
 Direction edges are within noise (about ±1–4% standard error at these counts) and
 every pattern lost money as a stand-alone trade. Use them, if at all, as context at
 a level the plan already identified, never as a signal on their own.
+
+## Daily, with the trend, 1:3, one compounding $40,000 account (run 2026-11-07)
+
+`scripts/portfolio.py BTCUSDT ETHUSDT SOLUSDT --capital 40000 --risk 1 --stop-atr 1.5
+--target-atr 4.5 --entry <entry>`. Long only while EMA50 > EMA200 and close > SMA100;
+1% of the current balance risked per trade; max one trade per coin; no leverage;
+fee + slippage both ways; gaps through the stop exit at the open. 2018-03 → 2026-11.
+
+| entry | final balance | return | CAGR | max DD | trades | win % | PF | longest losing streak |
+|---|---|---|---|---|---|---|---|---|
+| pullback (RSI back above 40) | $41,453 | +3.6% | 0.4% | 15.1% | 42 | 28.6 | 1.15 | 11 |
+| **breakout (close > 20-day high)** | **$81,835** | **+104.6%** | **8.6%** | **11.9%** | 135 | 40.0 | 1.90 | 10 |
+| new trend (close crosses SMA100) | $46,306 | +15.8% | 1.7% | 13.0% | 39 | 35.9 | 1.61 | 8 |
+
+Breakout checks: positive on each coin (BTC +$13.0k, ETH +$14.2k, SOL +$14.6k);
+stop/target 1/3, 1.5/4.5, 2/6 ATR gave +72.5%, +104.6%, +104.9%; risking 2% instead
+of 1% gave $158,227 (+296%, CAGR 17.2%) with max DD 22.3%. Yearly at 1%: 2018 0,
+2019 +7.7, 2020 +23.6, 2021 +27.4, 2022 0, 2023 +15.6, 2024 +8.9, 2025 −1.1,
+2026 −3.1 — no trades in the 2018/2022 bear markets, weaker in the last two years.
+
+Same breakout idea on 4h/1h without the daily trend filter lost money (see above):
+the daily timeframe plus the trend filter is what changed the outcome. Three entries
+were tested and all three had PF > 1; breakout is the best of the three, which adds
+some selection bias. Buy & hold of BTC+ETH over the same years returned more
+(+365%) but with an 81% drawdown.
