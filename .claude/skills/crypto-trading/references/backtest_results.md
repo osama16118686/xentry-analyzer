@@ -35,3 +35,24 @@ liquid coins do not show an edge after fees. What the tools reliably do is cap t
 loss per trade (fixed 1% risk, max drawdown stayed 4–17% while buy-and-hold swung
 −34% to +32%). Present any signal from them as a structured plan with defined risk,
 never as an accurate prediction. Re-run this test before quoting newer numbers.
+
+## Fear & Greed index filter (run 2026-11-07)
+
+Daily index from api.alternative.me (since 2018), lagged one day so no candle sees
+a value before it was published. 4h candles, BTC/ETH/SOL, same costs as above.
+Modes: `contrarian` = confluence longs only in fear (<50), shorts only in greed (>50);
+`momentum` = the opposite; `fear_buy` = long on a green candle when index ≤ 20;
+`greed_sell` = short on a red candle when index ≥ 80.
+
+| mode | last 1000 candles PF (trades) | 6000 candles IS PF (trades) | OOS PF (trades) |
+|---|---|---|---|
+| baseline confluence | 1.15 (36) | 0.86 (119) | 1.11 (60) |
+| contrarian | 1.08 (10) | 1.19 (24) | 0.68 (17) |
+| momentum | 1.19 (26) | 0.84 (98) | 1.33 (43) |
+| fear_buy | 1.06 (32) | 1.30 (62) | 0.86 (104) |
+| greed_sell | – (0) | 1.06 (51) | – (0) |
+
+Every filter that helped in one period hurt in the other (fear_buy, contrarian,
+momentum all flip). 1000 4h candles give only ~10–36 trades across three coins,
+too few to tell anything apart. **Conclusion: the Fear & Greed index adds no
+reliable edge**; it was not added to the indicator.
