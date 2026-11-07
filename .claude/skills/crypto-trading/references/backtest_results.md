@@ -143,3 +143,27 @@ Same breakout test; uninvested cash earns a fixed annual rate. Final balance fro
 A deposit alone at 2/3/4/5% for the same 8.68 years: $47,502 / $51,700 / $56,222 / $61,092.
 Real rates moved a lot over 2018–2026 (near zero for some years), so a fixed rate is a
 simplification.
+
+## Day trading on 1h candles, 1:2, closed the same day (run 2026-11-07)
+
+`scripts/intraday.py`, BTC/ETH/SOL 1h, 2023-06-06 → 2026-11-07 (30,000 candles each),
+$40,000 split equally per coin, 1% risk of the coin's current balance, one trade per
+coin per day, direction from the daily trend at the previous close, everything closed
+by the day's last candle. IS = first 70%, OOS = last 30%.
+
+| setup | sides | final balance | return | max DD | trades | win % | PF | IS PF | OOS PF |
+|---|---|---|---|---|---|---|---|---|---|
+| opening-range breakout | both | $15,140 | −62.1% | 62.8% | 1444 | 35.6 | 0.60 | 0.65 | 0.52 |
+| opening-range breakout | long | $22,436 | −43.9% | 44.8% | 859 | 36.1 | 0.60 | 0.64 | 0.34 |
+| volatility breakout | both | $15,870 | −60.3% | 60.4% | 950 | 31.8 | 0.51 | 0.57 | 0.43 |
+| volatility breakout | long | $24,351 | −39.1% | 39.2% | 545 | 33.0 | 0.53 | 0.55 | 0.44 |
+| 1h RSI pullback | both | $38,793 | −3.0% | 4.0% | 90 | 42.2 | 0.80 | 0.77 | 0.89 |
+| 1h RSI pullback | long | $39,271 | −1.8% | 3.7% | 44 | 45.5 | 0.74 | 0.67 | 1.63 (4 trades) |
+
+Costs check (both sides, full period): at 0.02% fee and no slippage ORB ended at
+$30,636 and volatility breakout at $25,219; even at zero cost they lost (−14.1%,
+−31.9%), so the entries themselves have no edge. The pullback setup turned slightly
+positive without costs (+3.0% at 0.02%, +3.9% at zero) on only 90 trades in 3.4 years.
+
+**Conclusion: no tested day-trading setup with 1:2 made money after realistic costs.**
+The daily trend filter that rescued the daily breakout strategy did not rescue them.
