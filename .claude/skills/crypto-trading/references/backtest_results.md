@@ -194,3 +194,29 @@ The edge is real but about 0.06–0.11% per trade, so it only survives with near
 costs (futures limit orders; maker fills are not guaranteed and tend to miss the best
 days), it weakened in 2025–2026, and the daily trend filter hurt it. Only a paper
 trade measuring real fills and fees can tell whether it is usable.
+
+## Day-trading search with a held-out final year (run 2026-11-07)
+
+66 combinations (orb / vbreak / pullback × R:R 1, 1.5, 2, 3 × both/long × trend on/off;
+evening window with 0.5/1 ATR stop × R:R, or time-only) were ranked on 2023-06-06 →
+2025-11-06 only, then the winner was run unchanged on 2025-11-07 → 2026-11-07.
+Costs per side: spot with BNB 0.075% + 0.02% slippage; futures taker with BNB 0.045% +
+0.02%; futures maker with BNB 0.018%, no slippage.
+
+- Ranked on futures-taker cost, the best training result was +1.2% over 2.4 years (50
+  trades); nothing with ≥100 trades was positive.
+- Ranked on futures-maker cost, the winner was the time-only evening trade (long 21:00
+  → 23:00 UTC, whole balance, no stop/target), training +61.6%, PF 1.24.
+
+Winner on the unseen last year, $40,000, 1,095 trades:
+
+| cost | final balance | return | max DD | PF |
+|---|---|---|---|---|
+| none | $48,232 | +20.6% | 8.8% | 1.24 |
+| futures maker + BNB | $42,293 | +5.7% | 13.6% | 1.07 |
+| futures taker + BNB | $30,006 | −25.0% | 32.2% | 0.75 |
+| spot + BNB | $24,098 | −39.8% | 43.5% | 0.60 |
+
+Adding a 1 ATR stop with a 1:1 / 1:1.5 / 1:2 / 1:3 target to the evening trade made
+it worse (last year, maker + BNB: −10.3% / −6.8% / −7.0% / −4.5%). The pullback setup
+stayed near zero at every R:R (40 trades, −0.2% to +0.5% after taker + BNB).

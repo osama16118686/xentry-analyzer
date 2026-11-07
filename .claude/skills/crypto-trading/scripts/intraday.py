@@ -16,6 +16,8 @@ Setups:
   vbreak    stop-entry at day open ± 0.5 × yesterday's range, stop at the day's open
   pullback  1h RSI crosses back above 40 (below 60 for shorts) with 1h EMA50 on the
             trend side; enter next open, stop 1.5 × 1h ATR
+  evening   long from the 21:00 UTC open to the 23:00 UTC open (time-of-day effect);
+            with --stop-atr 0 it holds the whole balance with no stop or target
 Target is always `--rr` × the stop distance.
 """
 import argparse
@@ -27,7 +29,7 @@ import pandas as pd
 from data import fetch_klines
 from indicators import atr, ema, rsi, sma
 
-SETUPS = ["orb", "vbreak", "pullback"]
+SETUPS = ["orb", "vbreak", "pullback", "evening"]
 
 
 def daily_trend(h1):
@@ -41,7 +43,8 @@ def daily_trend(h1):
     return out
 
 
-def run_coin(h1, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=0.05):
+def run_coin(h1, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=0.05,
+             trend_filter=True, start=None, stop_atr=1.5):
     fee, slip = fee_pct / 100, slippage_pct / 100
     h1 = h1.copy()
     h1["rsi"], h1["ema50"], h1["atr"] = rsi(h1["close"]), ema(h1["close"], 50), atr(h1)
@@ -50,7 +53,13 @@ def run_coin(h1, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=
     for day, g in h1.groupby(h1.index.floor("1D")):
         if day not in trend.index or pd.isna(trend.at[day, "up"]) or len(g) < 20:
             continue
+        if start is not None and day < start:
+            continue
         up, down = bool(trend.at[day, "up"]), bool(trend.at[day, "down"])
+        if not trend_filter:
+            up, down = True, True
+        if setup == "evening":
+            down = False
         if sides == "long":
             down = False
         if not (up or down):
@@ -58,6 +67,8 @@ def run_coin(h1, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=
             continue
         o, h, l, c = (g[k].to_numpy() for k in ("open", "high", "low", "close"))
         trade = None  # (side, entry_index, entry_price, stop, entry_on_candle)
+        last = len(g) - 1  # exit at this candle's close if nothing hit
+        exit_at_open = False
         if setup == "orb":
             hi, lo = h[:4].max(), l[:4].min()
             for i in range(4, len(g) - 1):
@@ -77,17 +88,26 @@ def run_coin(h1, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=
                 if down and l[i] <= short_px:
                     trade = (-1, i, min(short_px, o[i]) * (1 - slip), o[0], True)
                     break
+        elif setup == "evening":
+            hours = list(g.index.hour)
+            if 21 in hours and 23 in hours and hours.index(21) > 0:
+                i21, i23 = hours.index(21), hours.index(23)
+                a = g["atr"].to_numpy()[i21 - 1]
+                ent = o[i21] * (1 + slip)
+                stop = ent - stop_atr * a if stop_atr else 0.0
+                trade = (1, i21, ent, stop, False)
+                last, exit_at_open = i23, True
         elif setup == "pullback":
             r, e, a = g["rsi"].to_numpy(), g["ema50"].to_numpy(), g["atr"].to_numpy()
             prev_r = h1["rsi"].shift().loc[g.index].to_numpy()
             for i in range(len(g) - 1):
                 if up and prev_r[i] <= 40 < r[i] and c[i] > e[i]:
                     ent = o[i + 1] * (1 + slip)
-                    trade = (1, i + 1, ent, ent - 1.5 * a[i], False)
+                    trade = (1, i + 1, ent, ent - stop_atr * a[i], False)
                     break
                 if down and prev_r[i] >= 60 > r[i] and c[i] < e[i]:
                     ent = o[i + 1] * (1 - slip)
-                    trade = (-1, i + 1, ent, ent + 1.5 * a[i], False)
+                    trade = (-1, i + 1, ent, ent + stop_atr * a[i], False)
                     break
         if trade is None:
             curve.append((day, balance))
@@ -97,10 +117,16 @@ def run_coin(h1, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=
         if dist <= 0:
             curve.append((day, balance))
             continue
-        target = entry + side * rr * dist
-        qty = min(balance * risk_pct / 100 / dist, balance / entry)  # no leverage
-        exit_px, why = None, "end of day"
-        for j in range(j0, len(g)):
+        if setup == "evening" and not stop_atr:
+            # time-only trade: whole balance, no stop or target
+            target, qty = np.inf, balance / entry
+            r_unit = balance * risk_pct / 100
+        else:
+            target = entry + side * rr * dist
+            qty = min(balance * risk_pct / 100 / dist, balance / entry)  # no leverage
+            r_unit = balance * risk_pct / 100
+        exit_px, why = None, "end of window" if exit_at_open else "end of day"
+        for j in range(j0, last if exit_at_open else len(g)):
             hit_stop = l[j] <= stop if side == 1 else h[j] >= stop
             hit_tgt = h[j] >= target if side == 1 else l[j] <= target
             if hit_stop:
@@ -111,10 +137,10 @@ def run_coin(h1, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=
                 exit_px, why = (max(target, o[j]) if side == 1 else min(target, o[j])), "target"
                 break
         if exit_px is None:
-            exit_px = c[-1]
+            exit_px = o[last] if exit_at_open else c[last]
         exit_px *= 1 - side * slip
         pnl = side * qty * (exit_px - entry) - qty * (entry + exit_px) * fee
-        r_mult = pnl / (balance * risk_pct / 100)
+        r_mult = pnl / r_unit
         balance += pnl
         trades.append({"day": f"{day:%Y-%m-%d}", "side": "long" if side == 1 else "short",
                        "entry": round(entry, 4), "exit": round(exit_px, 4), "exit_reason": why,
@@ -147,11 +173,12 @@ def summarize(eq, trades, capital):
     }
 
 
-def portfolio(data, setup, capital, risk_pct, rr, sides, fee_pct=0.1):
+def portfolio(data, setup, capital, risk_pct, rr, sides, fee_pct=0.1, slippage_pct=0.05, trend_filter=True,
+              start=None, stop_atr=1.5):
     share = capital / len(data)
     curves, all_trades, per_coin = [], [], {}
     for sym, h1 in data.items():
-        eq, tr = run_coin(h1, setup, share, risk_pct, rr, sides, fee_pct)
+        eq, tr = run_coin(h1, setup, share, risk_pct, rr, sides, fee_pct, slippage_pct, trend_filter, start, stop_atr)
         curves.append(eq)
         all_trades += [{**t, "coin": sym} for t in tr]
         per_coin[sym] = {"final": round(eq.iloc[-1], 2), "trades": len(tr)}
@@ -169,11 +196,17 @@ if __name__ == "__main__":
     p.add_argument("--rr", type=float, default=2.0)
     p.add_argument("--setup", default="orb", choices=SETUPS)
     p.add_argument("--sides", default="both", choices=["both", "long"])
-    p.add_argument("--fee", type=float, default=0.1)
+    p.add_argument("--fee", type=float, default=0.1, help="fee per side %%")
+    p.add_argument("--slippage", type=float, default=0.05, help="slippage per side %%")
+    p.add_argument("--no-trend", action="store_true", help="trade every day, ignoring the daily trend")
+    p.add_argument("--stop-atr", type=float, default=1.5, help="stop size for pullback / evening (0 = no stop)")
+    p.add_argument("--start", help="first trading day, e.g. 2025-11-07 (earlier data only warms up)")
     p.add_argument("--log", help="write every trade to this CSV")
     a = p.parse_args()
     data = {s: fetch_klines(s, "1h", a.limit) for s in a.symbols}
-    eq, trades, per_coin = portfolio(data, a.setup, a.capital, a.risk, a.rr, a.sides, a.fee)
+    start = pd.Timestamp(a.start, tz="UTC") if a.start else None
+    eq, trades, per_coin = portfolio(data, a.setup, a.capital, a.risk, a.rr, a.sides, a.fee, a.slippage,
+                                     not a.no_trend, start, a.stop_atr)
     if a.log:
         pd.DataFrame(trades).to_csv(a.log, index=False)
     print(json.dumps({**summarize(eq, trades, a.capital), "per_coin": per_coin}, ensure_ascii=False, indent=2))
