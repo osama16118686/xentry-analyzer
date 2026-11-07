@@ -1,4 +1,12 @@
-# Built-in strategies (long-only, spot)
+# Built-in strategies
+
+## confluence (long and short; also tradingview/xentry_signals.pine)
+- **Idea:** only trade when trend, trend strength, pullback end and momentum agree.
+- **Long:** EMA50 > EMA200, close > EMA200, ADX > 20, RSI crosses above 40, MACD histogram rising, green candle.
+- **Short:** EMA50 < EMA200, close < EMA200, ADX > 20, RSI crosses below 60, MACD histogram falling, red candle.
+- **Measured:** about break-even after fees (see backtest_results.md).
+
+The three below are long-only (spot).
 
 All use: entry at the next candle's open, stop = entry − 1.5 ATR, target = entry + 3 ATR
 (R:R ≈ 2 before fees), 1% risk per trade, 0.1% fee per side, 0.05% slippage.

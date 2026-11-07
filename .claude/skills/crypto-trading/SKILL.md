@@ -20,7 +20,8 @@ Scripts are in `scripts/` (run from that directory; needs `pandas`, `numpy`, `re
 |---|---|
 | `analyze.py SYMBOL --interval 4h` | Trend, EMA20/50/200, RSI, MACD, Bollinger, ATR, volume, supports/resistances, ATR reference levels |
 | `risk.py --capital C --risk 1 --entry E --stop S --target T` | Position size, R:R, break-even win rate, leverage warnings |
-| `backtest.py SYMBOL --interval 4h --strategy all --split 0.7` | Backtest built-in strategies with fees and slippage, in-sample vs out-of-sample |
+| `backtest.py SYMBOL --interval 4h --strategy all --split 0.7 --limit 5000` | Backtest built-in strategies (long and short) with fees and slippage, in-sample vs out-of-sample |
+| `tradingview/xentry_signals.pine` | TradingView strategy script: buy/sell signals, stop and target lines, risk-based size, alerts, indicator panel. Same logic as `backtest.py --strategy confluence` |
 
 All scripts accept `--csv file.csv` (columns: time, open, high, low, close, volume)
 when the Binance API is unreachable.
@@ -74,7 +75,17 @@ Before endorsing any strategy (built-in or the user's own):
    data is overfitting. Tune on in-sample, judge on out-of-sample only.
 5. To test a user's own strategy, add a branch in `signals()` in `backtest.py`.
 
-See `references/strategies.md` for the built-in setups.
+See `references/strategies.md` for the built-in setups and `references/backtest_results.md`
+for measured results on real data. Those results show no strategy here has a proven
+edge; never describe a signal from these tools as accurate.
+
+## TradingView indicator
+
+When the user wants signals on their TradingView chart, give them
+`tradingview/xentry_signals.pine` and these steps: TradingView → Pine Editor → paste →
+Save → Add to chart. Strategy Tester shows its trades and stats on any coin and
+timeframe; alerts: Create alert → condition "Xentry Signals" → "alert() function calls only".
+Tell them to check its Strategy Tester results on their coin before trusting it.
 
 ## Output format (analysis)
 

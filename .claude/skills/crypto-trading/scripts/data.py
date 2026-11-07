@@ -10,27 +10,39 @@ BINANCE_HOSTS = [
 COLUMNS = ["time", "open", "high", "low", "close", "volume"]
 
 
-def fetch_klines(symbol="ETHUSDT", interval="4h", limit=1000):
-    """Fetch candles from Binance (no API key needed). Returns a DataFrame."""
+def _fetch_page(symbol, interval, limit, end_time=None):
     import requests
 
+    params = {"symbol": symbol.upper(), "interval": interval, "limit": limit}
+    if end_time is not None:
+        params["endTime"] = end_time
     last_error = None
     for host in BINANCE_HOSTS:
         try:
-            r = requests.get(
-                f"{host}/api/v3/klines",
-                params={"symbol": symbol.upper(), "interval": interval, "limit": limit},
-                timeout=15,
-            )
+            r = requests.get(f"{host}/api/v3/klines", params=params, timeout=15)
             r.raise_for_status()
-            rows = r.json()
-            df = pd.DataFrame([row[:6] for row in rows], columns=COLUMNS)
-            df["time"] = pd.to_datetime(df["time"], unit="ms", utc=True)
-            df[COLUMNS[1:]] = df[COLUMNS[1:]].astype(float)
-            return df.set_index("time")
+            return r.json()
         except Exception as e:  # try the next host
             last_error = e
     raise RuntimeError(f"تعذر جلب البيانات من Binance: {last_error}")
+
+
+def fetch_klines(symbol="ETHUSDT", interval="4h", limit=1000):
+    """Fetch the last `limit` candles from Binance (no API key needed), paging
+    backwards 1000 at a time. Returns a DataFrame."""
+    rows, end_time = [], None
+    while len(rows) < limit:
+        page = _fetch_page(symbol, interval, min(1000, limit - len(rows)), end_time)
+        if not page:
+            break
+        rows = page + rows
+        end_time = page[0][0] - 1
+        if len(page) < 1000:
+            break
+    df = pd.DataFrame([row[:6] for row in rows], columns=COLUMNS)
+    df["time"] = pd.to_datetime(df["time"], unit="ms", utc=True)
+    df[COLUMNS[1:]] = df[COLUMNS[1:]].astype(float)
+    return df.set_index("time")
 
 
 def load_csv(path):

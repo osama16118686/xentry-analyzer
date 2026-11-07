@@ -41,6 +41,19 @@ def atr(df, n=14):
     return tr.ewm(alpha=1 / n, adjust=False).mean()
 
 
+def adx(df, n=14):
+    """Wilder's ADX: trend strength, below ~20 means a ranging market."""
+    up = df["high"].diff()
+    down = -df["low"].diff()
+    plus_dm = up.where((up > down) & (up > 0), 0.0)
+    minus_dm = down.where((down > up) & (down > 0), 0.0)
+    a = atr(df, n)
+    plus_di = 100 * plus_dm.ewm(alpha=1 / n, adjust=False).mean() / a
+    minus_di = 100 * minus_dm.ewm(alpha=1 / n, adjust=False).mean() / a
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0, np.nan)
+    return dx.fillna(0).ewm(alpha=1 / n, adjust=False).mean()
+
+
 def add_all(df):
     df = df.copy()
     c = df["close"]
@@ -49,6 +62,7 @@ def add_all(df):
     df["macd"], df["macd_signal"], df["macd_hist"] = macd(c)
     df["bb_upper"], df["bb_mid"], df["bb_lower"] = bollinger(c)
     df["atr"] = atr(df)
+    df["adx"] = adx(df)
     df["vol_ratio"] = df["volume"] / sma(df["volume"], 20)
     df["high20"] = df["high"].rolling(20).max().shift()
     return df
